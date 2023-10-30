@@ -1,0 +1,8 @@
+.page-form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    margin-bottom: 50vh;
+    height: fit-content;
+}
