@@ -1,18 +1,7 @@
-import './App.css';
-import 'react-bootstrap';
-// import HomePage from "./components/HomePage";
-import React from 'react';
-import PostsPage from './components/Posts/PostsPage'
-
-
+import React from "react";
 
 function App() {
-  return (
-    <div>
-      {/* <HomePage /> */}
-      <PostsPage />
-    </div>
-  );
+  return <div>home page</div>;
 }
 
 export default App;
