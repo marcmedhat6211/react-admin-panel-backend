@@ -2,13 +2,18 @@ import React, { Fragment, useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 import Table from "react-bootstrap/Table";
 import AddProductModal from "../modals/AddProductModal";
+import ShowProductModal from "../modals/ShowProductModal";
 
 const ProductTable = () => {
   const [showModal, setShowModal] = useState(false);
+  const [showSingleProductModal, setShowSingleProductModal] = useState(false);
   const [products, setProducts] = useState([]);
   const [addProductLoading, setAddProductLoading] = useState(false);
+  const [fetchProductLoading, setFetchProductLoading] = useState(false);
+  const [productToBeShown, setProductToBeShown] = useState({});
 
   useEffect(() => {
+    setFetchProductLoading(true);
     fetch("http://localhost:8084/api/dummy-product/list", {
       method: "GET",
       headers: {
@@ -25,7 +30,8 @@ const ProductTable = () => {
       })
       .then((finalReponse) => {
         setProducts(finalReponse.data);
-      });
+      })
+      .finally(() => setFetchProductLoading(false));
   }, []);
 
   const addProductHandler = (data) => {
@@ -79,23 +85,44 @@ const ProductTable = () => {
           </tr>
         </thead>
         <tbody>
-          {products.map((product) => (
-            <tr key={product.id}>
-              <td>{product.id}</td>
-              <td>{product.name}</td>
-              <td>{product.description}</td>
-              <td>${product.price}</td>
-              <td>
-                <div className="d-flex align-items-center">
-                  <Button variant="success">Show</Button>
-                  <Button variant="primary" className="mx-2">
-                    Edit
-                  </Button>
-                  <Button variant="danger">Delete</Button>
-                </div>
-              </td>
+          {!fetchProductLoading ? (
+            products.map((product) => (
+              <tr key={product.id}>
+                <td>{product.id}</td>
+                <td>{product.name}</td>
+                <td>{product.description}</td>
+                <td>${product.price}</td>
+                <td>
+                  <div className="d-flex align-items-center">
+                    <Button
+                      variant="outline-success"
+                      size="sm"
+                      onClick={() => {
+                        setProductToBeShown(product);
+                        setShowSingleProductModal(true);
+                      }}
+                    >
+                      Show
+                    </Button>
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      className="mx-2"
+                    >
+                      Edit
+                    </Button>
+                    <Button variant="outline-danger" size="sm">
+                      Delete
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td>Loading...</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </Table>
       <AddProductModal
@@ -103,6 +130,11 @@ const ProductTable = () => {
         handleClose={() => setShowModal(false)}
         addProductHandler={addProductHandler}
         loading={addProductLoading}
+      />
+      <ShowProductModal
+        show={showSingleProductModal}
+        handleClose={() => setShowSingleProductModal(false)}
+        product={productToBeShown}
       />
     </Fragment>
   );
