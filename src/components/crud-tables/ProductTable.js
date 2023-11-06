@@ -12,19 +12,21 @@ const ProductTable = () => {
   const [addProductLoading, setAddProductLoading] = useState(false);
   const [fetchProductLoading, setFetchProductLoading] = useState(false);
   const [productToBeShown, setProductToBeShown] = useState({});
+  const [productToBeEdited, setProductToBeEdited] = useState({});
   const [deleteProductLoading, setDeleteProductLoading] = useState([]);
 
   const deleteProductHandler = (productId) => {
     // "/dummy-product/" + productId
     setDeleteProductLoading((prevState) => {
       return prevState.map((productLoadingObj) => {
-        if (productLoadingObj.id == productId) {
+        if (productLoadingObj.id === productId) {
           return { id: productLoadingObj.id, loading: true };
         } else {
           return productLoadingObj;
         }
       });
     });
+
     sendRequest(`/dummy-product/${productId}`, "DELETE")
       .then((response) => {
         if (
@@ -43,7 +45,7 @@ const ProductTable = () => {
       .finally(() => {
         setDeleteProductLoading((prevState) => {
           return prevState.map((productLoadingObj) => {
-            if (productLoadingObj.id == productId) {
+            if (productLoadingObj.id === productId) {
               return { id: productLoadingObj.id, loading: false };
             } else {
               return productLoadingObj;
@@ -94,6 +96,28 @@ const ProductTable = () => {
       })
     );
   }, [products]);
+
+  const editProductHandler = (data, productId) => {
+    setAddProductLoading(true);
+    sendRequest("/dummy-product/" + productId, "PATCH", data)
+      .then((res) => {
+        if (res && typeof res === "object" && "success" in res && res.success) {
+          setProducts((currentState) => {
+            return currentState.map((product) => {
+              if (product.id === productId) {
+                return res.product;
+              } else {
+                return product;
+              }
+            });
+          });
+        }
+      })
+      .finally(() => {
+        setAddProductLoading(false);
+        setShowModal(false);
+      });
+  };
 
   const addProductHandler = (data) => {
     setAddProductLoading(true);
@@ -149,7 +173,12 @@ const ProductTable = () => {
   return (
     <Fragment>
       <div className="d-flex justify-content-end mb-3">
-        <Button variant="success" onClick={() => setShowModal(true)}>
+        <Button
+          variant="success"
+          onClick={() => {
+            setShowModal(true);
+          }}
+        >
           Add product
         </Button>
       </div>
@@ -187,6 +216,10 @@ const ProductTable = () => {
                       variant="outline-primary"
                       size="sm"
                       className="mx-2"
+                      onClick={() => {
+                        setProductToBeEdited(product);
+                        setShowModal(true);
+                      }}
                     >
                       Edit
                     </Button>
@@ -195,7 +228,7 @@ const ProductTable = () => {
                       size="sm"
                       disabled={
                         deleteProductLoading.find(
-                          (loadingObj) => loadingObj.id == product.id
+                          (loadingObj) => loadingObj.id === product.id
                         )?.loading
                       }
                       onClick={() => {
@@ -203,7 +236,7 @@ const ProductTable = () => {
                       }}
                     >
                       {deleteProductLoading.find(
-                        (loadingObj) => loadingObj.id == product.id
+                        (loadingObj) => loadingObj.id === product.id
                       )?.loading
                         ? "Loading..."
                         : "Delete"}
@@ -226,6 +259,8 @@ const ProductTable = () => {
         handleClose={() => setShowModal(false)}
         addProductHandler={addProductHandler}
         loading={addProductLoading}
+        productToBeEdited={productToBeEdited}
+        editProductHandler={editProductHandler}
       />
       <ShowProductModal
         show={showSingleProductModal}
